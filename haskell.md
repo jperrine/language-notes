@@ -300,8 +300,6 @@ Tuples are fixed length lists with elements of different types and enclosed in p
 		
 	zip [1..] ["one","two","three"]
 		# => [(1,"one"),(2,"two"),(3,"three")]
-		
-	
 
 ## Concatenation
 
@@ -341,3 +339,82 @@ Strings in Haskell are just lists of single characters.
 
 	"Hello" == ['H','e','l','l','o']
 		# => True
+		
+## Types and Type Declarations
+
+`::` is the 'has type of operator' and `:t` displays the type of an element
+
+	:t True
+		# => True :: Bool
+		
+	:t "Hello"
+		# => "Hello" :: [Char] meaning a list of Char
+		
+Type declarations of functions, the following takes a list of `Char` and returns another list of `Char`
+
+	removeNonUppercase :: [Char] -> [Char]
+	removeNonUppercase st = [ c | c <- st, c `elem` ['A'..'Z']]
+
+The `->` separates the parameters and the return of a function, the final element in the declaration shows the function's return type.	
+
+	addThree :: Int -> Int -> Int
+	addThree x y z = x + y + z
+
+`a` in a type declaration is an anonymous type
+
+### Basic Types
+
+* `Int` stands for Integer, and is used for whole numbers and is bounded meaning it has a minimum and maximum value as determined by the computer's CPU
+* `Integer` is also used for Integers but is unbounded
+* `Float` is a floating point number with single precision
+* `Double` is also a floating point number but with double the precision
+* `Bool` is a Boolean type with only two values `True` and `False`
+* `Char` represents a unicode character, denoted by single quotes. A list of characters is a string
+* Tuples are types in which their definition depends on their elements and size, empty tuple is its own distinct type
+
+### Type Variables
+
+Functions without explicit declaration of parameter types can operate on multiple types, this is called a type variable and is commonly represented by `a` in type declarations.
+
+	:t head
+		# => head :: [a] -> a
+		
+	:t fst
+		# => fst :: (a, b) => a
+		
+	:t snd
+		# => snd :: (a, b) => b
+		
+`head` takes a list of type `a` and returns a single `a` element, similarly `fst` takes a Tuple pair of type `(a,b)` and returns `a`, `a` and `b` can be of the same type, this just allows the function to operate on any type of pair Tuple.
+
+### Type Classes
+
+A type class is like an interface in OO languages like C# and Java, it encapsulates a bit of functionality and allows functions to operate on type variables that implement those type classes.
+
+	:t (==)
+		# => (==) :: (Eq a) => a -> a -> Bool
+		
+`(Eq a) => ` is called a *class constraint* which means all elements passed to `==` must be an instance of `Eq`. All standard Haskell types (minus IO) are instances of `Eq`
+
+#### Common Type Classes
+
+Types can be instances of many type classes and some type classes depend on being an instance of another type class. For example `Ord` has a dependency on `Eq`, if a type implements `Ord` it must also implement `Eq`.
+
+* `Eq` is used for types that support equality testing
+* `Ord` is used for types that support ordering
+	* `:t (>) # => (>) :: (Ord a) => a -> a -> Bool`
+	* `Ord` also supports `GT`, `LT`, and `EQ`
+		* `compare 5 3 # => GT`
+* `Show` is used to represent an element as a string, all types are instances of show except functions
+	* `show 3 # => "3"`
+* `Read` is the opposite of show, it reads a type from a String representation and must be supplied with additional arguments to allow type inference, or a type declaration
+	* `read "3" + 5 # => 8`
+	* `read "3" :: Int # => 3`
+* `Enum` values are sequentially order types
+* `Bounded` instances have an upper and lower bound
+	* `minBound :: Int # => -2147483648`
+	* `maxBound :: Int # => 2147483648`
+* `Num` is a numeric type class whose instances can act like numbers, supported by all numeric types
+* `Floating` includes the Float and Double types
+* `Integral` is similar to the `Num` type but only includes Integral numbers
+
