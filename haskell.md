@@ -418,3 +418,175 @@ Types can be instances of many type classes and some type classes depend on bein
 * `Floating` includes the Float and Double types
 * `Integral` is similar to the `Num` type but only includes Integral numbers
 
+## Pattern Matching
+
+Pattern matching is a method to define a function that handles different types of variables gracefully without if/else chains
+
+	lucky :: Int -> String
+	lucky 7 = "LUCKY NUMBER 7!!"
+	lucky n = "Not so lucky."
+	
+Patterns are matched in the order declared
+
+	lucky 9 
+		# => "Not so lucky."
+	
+	lucky 7 
+		# => "LUCKY NUMBER 7!!"
+		
+Patterns using a variable instead of a value serve as catch-all patterns and should be left as the last pattern. Not using a catch-all will result in a run-time error when a pattern isn't matched
+
+### With Recursion
+
+	factorial :: Integer -> Integer
+	factorial 0 = 1
+	factorial n = factorial (n - 1)
+
+### With Tuples
+
+	addVectors :: (Double,Double) -> (Double,Double) -> (Double,Double)
+	addVectors a b = (fst a + fst b, snd a + snd b)
+
+A more idiomatic and readable approach can be written like this
+
+	addVectors :: (Double,Double) -> (Double,Double) -> (Double,Double)
+	addVectors (x1,y1) (x2,y2) = (x1 + x2, y1 + y2)
+	
+#### With List Comprehensions
+
+	[a+b | (a, b) <- [(1,2), (4,3), (5,6), (7,8)]]
+		# => [3,7,11,15]
+		
+If pattern matching fails in a list comprehension, that element is discarded and the next element is examined
+
+### With Lists
+
+`[1,2,3,4]` is just syntactic sugar for `1:2:3:4:[]` which means lists can be matched as patterns like so
+
+	head' :: [a] -> a
+	head' [] = error "Can't call head on an empty list"
+	head' (x:_) = x
+	
+Binding to several variables must be wrapped in `()` so Haskell can parse correctly.
+
+	tell :: (Show a) => [a] -> String
+	tell [] = "The list is empty"
+	tell (x:[]) = "The list has one element: " ++ show x
+		# can be written as [x]
+	tell (x:y:[]) = "The list has two elements: " ++ show x ++ " and " ++ show y
+		# can be written as [x,y]
+	tell (x:y:_) = "The list is long, the first two elements are: " ++ show x ++ " and " ++ show y
+	
+	tell [1]
+		# => "The list has one element: 1"
+	tell [True,False]
+		# => "The list has two elements: True and False"
+	tell [1,2,3,4]
+		# => "This list is long. The first two elements are: 1 and 2"
+	tell []
+		# => "The list is empty"
+		
+### As-Patterns
+
+As-patterns allow you to break up a pattern and still keep a reference to the original item
+
+	firstLetter :: String -> String
+	firstLetter "" = "Empty String"
+	firstLetter all@(x:xs) = "The first letter of " ++ all ++ " is " ++ [x] # ++ only works with lists!
+	
+	firstLetter "Dracula"
+		# => "The first letter of Dracula is D"
+		
+## Guards
+
+Guards check if parameters passed to your function meet certain conditions, they are similar to if chains in an imperative language. Guards are indicated by the vertical pipe followed by a boolean expression.
+
+	bmiTell :: Double -> String
+	bmiTell weight height
+		| bmi <= 18.5 = "You're underweight"
+		| bmi <= 25.0 = "You're normal"
+		| bmi <= 30.0 = "You're fat"
+		| otherwise = "You're a whale"
+		where bmi = weight / height ^ 2
+		      skinny = 18.5
+		      normal = 25.0
+		      fat = 30.0
+
+## Where blocks
+
+`otherwise` is the catch-all line for guards. `where` is used to define local variables or functions that live in the function's scope and must be indented from the function body, multiple variable declarations must be lined up vertically to avoid Haskell confusion. An important note about `where` scope is that the variables defined are not shared between patterns but are shared among guards.
+
+`where` can also utilize pattern matching.
+
+	where (skinny,normal,fat) = (18.5,25.0,30.0)
+	
+	initials :: String -> String -> String
+	initials firstname lastname = [f] ++ ". " ++ [l] ++ "."
+		where (f:_) = firstname
+		      (l:_) = lastname
+		
+### With functions
+
+The following uses the `where` created `bmi` function in the list comprehension in the function body.
+
+	calcBmis :: [(Double,Double)] -> Double
+	calcBmis xs = [bmi w h | (w,h) <- xs] 
+		where bmi weight height = weight / height ^ 2
+		
+
+## Let Expressions
+
+`let` expressions are similar to `where` in that `let` expressions let you bind variables anywhere and are expressions themselves, but they are more local and aren't shared among guards. `let` syntax follows the convention `let <bindings> in <expression>`. The values of the bindings are only visible in the whole `let` expression.
+
+	cylinder :: Double -> Double -> Double
+	cylinder r h = 
+		let sideArea = 2 * pi * r * h
+		    topArea = pi * r ^ 2
+		in sideArea + 2 * topArea
+		
+Multivariable `let` expressions require the variables to be in the same column much like `where` blocks.
+
+	[let square x = x * x in (square 5, square 3, square 6)]
+		# => [(25,9,36)]
+	
+	(let a = 100; b = 200; c = 300 in a*b*c, let foo="Hey "; bar = "there!" in foo ++ bar)
+		# => (6000000,"Hey there!")
+		
+	(let (a, b, c) = (1, 2, 3) in a+b+c) * 100
+		# => 600
+
+### In List Comprehensions
+
+	calcBmis :: [(Double, Double)] -> [Double] 
+	calcBmis xs = [bmi | (w, h) <- xs, let bmi = w / h ^ 2]
+	
+Each time the list comprehension binds a Tuple from the original list and binds its components to w and h, the let expression binds `w / h ^ 2` to the name bmi which is used as the output of the list comprehension, resulting in a list of bmis.
+
+### Let in the REPL
+
+Let is used to declare functions and variables in the REPL but if an added `in <>` expression is added it will make the name bound to that scope and not reusable in the REPL.
+
+	ghci> let zoot x y z = x * y + z
+	ghci> zoot 3 9 2
+		# => 29
+	ghci> let boot x y z = x * y + z in boot 3 4 2
+		# => 14
+	ghci> boot
+		# => not in scope
+		
+## Case Expressions
+
+Case Expressions are essentially pattern matching that is usable anywhere in code and similar to case statements in imperative languages.
+
+	head' :: [a] -> a
+	head' xs = case xs of [] -> error "Empty list"
+	                      (x:_) -> x
+	
+Pattern matching on function parameters can be done only when defining functions, but case expressions can be used anywhere.
+
+	describeList :: [a] -> String
+	describeList lst = "The list is " ++ case lst of [] -> "empty."
+	                                                 [x] -> "a singleton list."
+	                                                 xs -> "a longer list."
+
+## Recursion
