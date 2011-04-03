@@ -271,7 +271,37 @@ Syntax
 		
 ## Tuples
 
+Tuples are fixed length lists with elements of different types and enclosed in parentheses
 
+	(1,3)
+		# => (1,3)
+	
+	(1,'a',3)
+		# => (1,'a',3)
+		
+	[(1,3),(2,6),('a',2)]
+		# => Error, lists can only contain elements of the same type, Tuples are typed to their elements and size
+	
+### Tuple Operations
+
+	fst (1,3) # only works on pairs
+		# => 1
+	
+	snd (1,3) # only works on pairs
+		# => 3
+		
+`zip` takes two lists and returns a list of tuples containing an element of each list
+
+	zip [1,2,3,4] [4,3,2,1]
+		# => [(1,4),(2,3),(3,2),(4,1)]
+		
+	zip [1] [1,2,3]
+		# => [(1,1)]
+		
+	zip [1..] ["one","two","three"]
+		# => [(1,"one"),(2,"two"),(3,"three")]
+		
+	
 
 ## Concatenation
 
