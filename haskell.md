@@ -235,7 +235,44 @@ Head always returns an individual element and tail returns a list of elements, b
 		# => [10,10,10]
 		
 ### List Comprehensions
+
+List comprehensions are a succinct way to filter, transform and combine lists. Similar to mathematical set comprehensions.
+
+Syntax
+	
+	[{what-to-collect} | {local-variable for each item in set} <- {collect to pull from}, {n predicates comma delimited}]
+	
+	[x*2 | x <- [1..10]]
+		# => [2,4,6,8,10,12,14,16,18,20]
 		
+	[x*2 | x <- [1..10], x*2 >= 12]
+		# => [12,14,16,18,20]
+	
+	[ x | x <- [50..100], x `mod` 7 == 3]
+		# => [52,59,66,73,80,87,94]
+		
+	[ if x < 10 then "BOOM!" else "BANG!" | x <- [7..13], odd x]
+		# => ["BOOM!", "BOOM!", "BANG!", "BANG!"]
+	
+	[ x | x <- [10..20], x /= 13, x /= 15, x /= 19]
+		# => [10,11,12,14,16,17,18,20]
+		
+	[x+y | x <- [1,2,3], y <- [10,100,1000]]
+		# => [11,101,1001,12,102,1002,13,103,1003]
+		
+	[ x*y | x <- [2,5,10], y <- [8,10,11], x*y > 50]
+		# => [55,80,100,110]
+		
+	sum [1 | _ <- [1..10]] # _ ignores the value, get's the length of collection
+		# => 10
+		
+	[ c | c <- ['a','B','c'], c `elem` ['A'..'Z']]
+		# => ['B']
+		
+## Tuples
+
+
+
 ## Concatenation
 
 The concatenation operator is `++` and works on list type elements, avoid concatenating long lists, as the first list has to be walked to the end before the second can be appended. 
