@@ -590,3 +590,35 @@ Pattern matching on function parameters can be done only when defining functions
 	                                                 xs -> "a longer list."
 
 ## Recursion
+
+	maximum' :: (Ord a) => [a] -> a
+	maximum' [] = "Empty list"
+	maximum' [x] = x
+	maximum' (x:xs) = max x (maximum' xs)
+	
+	replicate' :: Int -> a -> [a]
+	replicate' n x
+		| n <= 0    = []
+		| otherwise = x : replicate' (n-1) x
+		
+	take' :: (Num i, Ord i) => i -> [a] -> [a]
+	take' n _ 
+		| n <= 0 = []
+	take' _ [] = []
+	take' n (x:xs) = x : take' (n-1) xs
+	
+Infinite recursion
+
+	repeat' :: a -> [a]
+	repeat' x = x:repeat' x
+	
+	zip' :: [a] -> [b] -> [(a,b)]
+	zip' _ [] = []
+	zip' [] _ = []
+	zip' (x:xs) (y:ys) = (x,y):zip' xs ys
+	
+	elem' :: (Eq a) => a -> [a] -> Bool
+	elem' a [] = False
+	elem' a (x:xs)
+		|	a == x = True
+		| otherwise elem' a xs
