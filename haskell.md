@@ -631,3 +631,90 @@ Infinite recursion
 		let smallerOrEqual = [a | a <- xs, a <= x]
 		    larger = [a | a <- xs, a > x]
 		in quicksort smallerOrEqual ++ [x] ++ quicksort larger
+		
+## High Order Functions
+
+All functions in Haskell only take on argument, function definitions like this
+
+	max :: (Ord a) => a -> a -> a
+	
+means the same as this
+
+	max :: (Ord a) => a -> (a -> a)
+	
+essentially all functions with more than one argument are high order, as they return a function that takes the additional parameter and returns a value from that, also known as `curried functions`. The `->` means you are defining a function that takes whatever is on its left side and returns a value of the type on its right side. Using the following function definition
+
+	multThree :: Int -> Int -> Int -> Int
+	# aka multThree :: Int -> (Int -> (Int -> Int))
+	multThree x y z = x * y * z
+
+When called like so `multThree 3 5 9` the function is applied like this `((multThree 3) 5) 9`. First, `multThree` is applied to 3, because they’re separated by a space. That creates a function that takes one parameter and returns a function. Then that function is applied to 5, which creates a function that will take one parameter, multiply 3 and 5 together, and then multiply that by the parameter. That function is applied to 9, and the result is 135.
+
+	let multThreeWithNine = multThree 9
+	multThreeWithNine 2 3
+		# => 54
+		
+### Sections
+
+Allows the partial application of Infix functions, sectioning an infix function can be supplying one parameter and surrounding the function with parentheses.
+
+	divideByTen :: (Floating a) => a -> a
+	divideByTen = (/10)
+
+	divideByTen 5
+		# => 0.5
+		
+### Functions Taking Functions
+
+	applyTwice :: (a -> a) -> a -> a
+	applyTwice f x = f (f x)
+	
+	zipWith' :: (a -> b -> c) -> [a] -> [b] -> [c]
+	zipWith' _ [] _ = []
+	zipWith' _ _ [] = []
+	zipWith' f (x:xs) (y:ys) = f x y : zipWith' f xs ys
+	
+	flip' :: (a -> b -> c) -> (b -> a -> c)
+	flip' f = g
+		where g x y = f y x
+		
+Could also be written as 
+	
+	flip' :: (a -> b -> c) -> b -> a -> c
+	flip' f x y = f y x
+	
+	map' :: (a -> b) -> [a] -> [b]
+	map' _ [] = []
+	map' f (x:xs) = f x : map f xs
+	
+	filter' :: (a -> Bool) [a] -> [a]
+	filter' _ [] = []
+	filter' p (x:xs)
+		| p x = x : filter p xs
+		| otherwise = filter p xs
+		
+### Quicksort using filter
+
+	quicksort :: (Ord a) => [a] -> [a]
+	quicksort [] = []
+	quicksort (x:xs) = 
+		let smallerOrEqual = filter (<= x) xs
+		    larger = filter (> x) xs
+		in quicksort smallerOrEqual ++ [x] ++ larger
+		
+### Collatz chain
+
+Length of collatz chain for numbers 1 through 100
+
+	chain :: Integer -> [Integer]
+	chain 1 = [1]
+	chain n
+		| even n = n : chain (div n 2)
+		| odd n = n : chain (n * 3 + 1)
+	
+	numLongChains :: Int
+	numLongChains = length (filter isLong (map chain [1..100]))
+		where isLong xs = length xs > 15
+		
+### Lambdas
+
