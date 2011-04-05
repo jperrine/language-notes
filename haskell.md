@@ -718,3 +718,74 @@ Length of collatz chain for numbers 1 through 100
 		
 ### Lambdas
 
+Lambdas are distinguished by the `\` character, their syntax is as follows:
+
+	\ {parameter} -> {body}
+	
+	map (+3) [1,2,3]
+		# => [4,5,6]
+	
+	map (/x -> x + 3) [1,2,3]
+		# => [4,5,6]
+		
+Pattern matching is available in lambdas, although you can't define several patterns for one parameter
+
+	map (\(a,b) -> a + b) [(1,2),(3,4)]
+		# => [3,7]
+	
+### Folds
+
+Folds are used to reduce a collection to a single value, they take a binary function and a list to fold up. Folds can done from the right or left or a collection. The type of the accumulator value and the type of the end result are always the same when dealing with folds.
+
+	foldl (+) 0 [1,2,3,4,5]
+		# => 15
+		
+	sum' :: (Num a) => [a] -> a
+	sum' xs = foldl (+) 0 xs
+	
+`sum'` can be rewritten as the following because of currying
+
+	sum' = foldl (+) 0
+	
+	foldr (+) 0 [1,2,3,4,5]
+		# => 15
+	
+	map' :: (a -> b) -> [a] -> [b]
+	map' f xs = foldr (\x acc -> f x : acc) [] xs
+	
+Or with a left fold
+
+	map' :: (a -> b) -> [a] -> [b]
+	map' f xs = foldl (\acc x -> acc ++ [f x]) [] xs
+	
+`++` is much slower than `:` as it must walk the entire list before concatenating so it is better to use `foldr` when building new lists
+
+Also important to note that right folds work on infinite lists and left folds do not. `foldr` will work on infinite lists when the binary function that we’re pass- ing to it doesn’t always need to evaluate its second parameter to give us some sort of answer. For instance, && doesn’t care what its second parameter is if its first parameter is False.
+
+	elem' :: (Eq a) => a -> [a] -> Bool
+	elem' x xs = foldr (\x acc -> if x == y then True else acc) False ys
+	
+`foldl1` and `foldr1` are like `foldl` and `foldr` except that they don't need an explicit starting accumulator, they assume the first element passed is the accumulator and go from there.
+
+	reverse' :: [a] -> [a]
+	reverse' = foldl (\acc x -> x : acc) []
+	
+	product' :: (Num a) => [a] -> a
+	product' = foldl (*) 1
+	
+	filter' :: (a -> Bool) -> [a] -> [a]
+	filter' p = foldr (\x acc -> if p x then x : acc else acc) []
+	
+	last' :: [a] -> a
+	last' = foldl1 (\_ x -> x)
+	
+### Scans
+
+Scans are like fold except they report intermediate accumulator results
+
+	scanl (+) 0 [3,4,5,6]
+		# => [0,3,7,12,18]
+		
+	scanr (+) 0 [3,4,5,6]
+		# => [18,15,11,6,0]
+		
