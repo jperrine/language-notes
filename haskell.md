@@ -789,3 +789,63 @@ Scans are like fold except they report intermediate accumulator results
 	scanr (+) 0 [3,4,5,6]
 		# => [18,15,11,6,0]
 		
+## Function Application Operator
+
+`$` is the function application operator which has a lower precedence than normal function application with a space and is right-associative. 
+
+	sum (map sqrt [1..130])
+	
+becomes
+
+	sum $ map sqrt [1..130]
+	
+	sum (filter (> 10) (map (*2) [2..10]))
+	
+also becomes
+
+	sum $ filter (> 10) (map (*2) [2..10])
+	
+or more succinctly 
+
+	sum $ filter (> 10) $ map (*2) [2..10]
+	
+	map ($ 3) [(4+), (10*), (^2), sqrt]
+	
+## Function Composition
+
+Function composition is like composing two functions by using the result of the first function and passing it to the second function. Function composition is done with the `.` function, which has the following signature.
+
+	(.) :: (b -> c) -> (a -> b) -> a -> c
+	f . g = \x -> f (g x)
+
+f must take as its parameter a value that has the same type as g's return type
+
+	map (\x -> negate (abs x)) [5,-3,-6,7,-3,2,-19,24]
+	
+can more clearly become this
+
+	map (negate . abs) [5,-3,-6,7,-3,2,-19,24]
+	
+	map (\xs -> negate (sum (tail xs))) [[1..5],[3..6],[1..7]]
+	
+also can become this
+
+	map (negate . sum . tail) [[1..5],[3..6],[1..7]]
+	
+Compressing complex functions can turn this
+
+	replicate 2 (product (map (*3) (zipWith max [1,2] [4,5])))
+	
+into this
+
+	replicate 2 . product . map (*3) $ zipWith max [1,2] [4,5]
+	
+### Point free style
+
+Defining a function without parameters that uses function composition to build a function based on the passed value.
+
+	fn x = ceiling (negate (tan (cos (max 50 x))))
+	
+becomes
+
+	fn = ceiling . negate . tan . cos . max 50
