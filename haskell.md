@@ -849,3 +849,47 @@ Defining a function without parameters that uses function composition to build a
 becomes
 
 	fn = ceiling . negate . tan . cos . max 50
+	
+## Modules
+
+### Importing
+
+	import Data.List
+	
+Inside ghci loading modules is done via
+
+	:m + Data.List
+
+Import selective functions
+
+	import Data.List (nub, sort)
+	
+Import all but selected functions
+
+	import Data.List hiding (nub)
+	
+Use `qualified` to handle name clashes so haskell knows which function you want to use
+
+	import qualified Data.Map as M
+	
+Then Data.Map functions can be accessed with the `M.` prefix
+
+### Creating
+
+A module is created like so
+
+	module `Name`
+	( function1, 
+		function2,
+		function3
+	) where
+	
+### Hierarchical Modules
+
+Modules can be named with a dot syntax to separate submodules
+
+	module `Name`.`Submodule`
+	( 
+		...
+	) where 
+	
